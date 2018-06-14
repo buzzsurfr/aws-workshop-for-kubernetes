@@ -138,7 +138,7 @@ Logs from the pod can be obtained (a fresh nginx does not have logs - check agai
 This command will open a TTY to a shell in your pod:
 
     $ kubectl get pods
-    $ kubectl exec -it <pod-name> /bin/bash
+    $ kubectl exec <pod-name> -it /bin/bash
 
 This opens a bash shell and allows you to look around the filesystem of the container.
 
@@ -514,12 +514,15 @@ A "`desired state`", such as 4 replicas of a pod, can be described in a Deployme
 The folowing example will create a Deployment with 3 replicas of NGINX base image. Let's begin with the template:
 
   $ cat deployment.yaml
-	apiVersion: extensions/v1beta1
+	apiVersion: apps/v1
 	kind: Deployment # kubernetes object type
 	metadata:
 	  name: nginx-deployment # deployment name
 	spec:
 	  replicas: 3 # number of replicas
+	  selector:
+	    matchLabels:
+	      app: nginx
 	  template:
 	    metadata:
 	      labels:
@@ -695,12 +698,15 @@ Pods belong to a service by using a loosely-coupled model where labels are attac
 Let's create a Deployment first that will create 3 replicas of a pod:
 
   $ cat echo-deployment.yaml
-	apiVersion: extensions/v1beta1
+	apiVersion: apps/v1
 	kind: Deployment
 	metadata:
 	  name: echo-deployment
 	spec:
 	  replicas: 3
+	  selector:
+	    matchLabels:
+	      app: echo-pod
 	  template:
 	    metadata:
 	      labels:
@@ -708,7 +714,7 @@ Let's create a Deployment first that will create 3 replicas of a pod:
 	    spec:
 	      containers:
 	      - name: echoheaders
-	        image: gcr.io/google_containers/echoserver:1.4
+	        image: k8s.gcr.io/echoserver:1.10
 	        imagePullPolicy: IfNotPresent
 	        ports:
 	        - containerPort: 8080
@@ -739,7 +745,7 @@ Pod Template:
   Labels:  app=echo-pod
   Containers:
    echoheaders:
-    Image:        gcr.io/google_containers/echoserver:1.4
+    Image:        k8s.gcr.io/echoserver:1.10
     Port:         8080/TCP
     Environment:  <none>
     Mounts:       <none>
@@ -922,6 +928,10 @@ The folowing is an example DaemonSet that runs a Prometheus container. Let's beg
 	metadata:
 	  name: prometheus-daemonset
 	spec:
+	  selector:
+	    matchLabels:
+	      tier: monitoring
+	      name: prometheus-exporter
 	  template:
 	    metadata:
 	      labels:
@@ -1379,6 +1389,9 @@ No resource limits.
 	  namespace: dev
 	spec:
 	  replicas: 3
+	  selector:
+	    matchLabels:
+	      app: nginx
 	  template:
 	    metadata:
 	      labels:
@@ -1419,13 +1432,13 @@ Alternatively, a namespace can be created using `kubectl` as well.
 . Create a Deployment:
 
 	$ kubectl -n dev2 apply -f deployment.yaml
-	deployment "nginx-deployment-ns" created
+	deployment "nginx-deployment" created
 
 . Get Deployments in the newly created Namespace:
 
 	$ kubectl get deployments -n dev2
 	NAME               DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
-	nginx-deployment-ns   3         3         3            3           1m
+	nginx-deployment   3         3         3            3           1m
 
 . Get Deployments in all Namespaces:
 
@@ -1433,7 +1446,7 @@ Alternatively, a namespace can be created using `kubectl` as well.
 	NAMESPACE     NAME                  DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 	default       nginx-deployment      3         3         3            3           1h
 	dev           nginx-deployment-ns   3         3         3            3           1h
-	dev2          nginx-deployment-ns   3         3         3            3           1m
+	dev2          nginx-deployment      3         3         3            3           1m
 	kube-system   dns-controller        1         1         1            1           5h
 	kube-system   kube-dns              2         2         2            2           5h
 	kube-system   kube-dns-autoscaler   1         1         1            1           5h
@@ -1606,8 +1619,8 @@ Note, how CPU and memory resources have incremented values.
 
 https://github.com/kubernetes/kubernetes/issues/55433[kubernetes#55433] provide more details on how an explicit CPU resource is not needed to create a Pod with ResourceQuota.
 
-$ kubectl delete quota/quota
-$ kubectl delete quota/quota2
+	$ kubectl delete quota/quota
+	$ kubectl delete quota/quota2
 
 You are now ready to continue on with the workshop!
 

@@ -20,6 +20,7 @@ sudo yum install bash-completion -y
 # Install kubectl
 curl -o kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-06-05/bin/linux/amd64/kubectl
 chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+echo "source <(kubectl completion bash)" >> ~/.bashrc
 
 # Install Heptio Authenticator
 curl -o heptio-authenticator-aws https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-06-05/bin/linux/amd64/heptio-authenticator-aws
@@ -54,6 +55,7 @@ export EKS_SERVICE_ROLE=$(aws cloudformation describe-stacks --stack-name $AWS_M
 # Persist lab variables
 echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION" >> ~/.bashrc
 echo "AWS_AVAILABILITY_ZONES=$AWS_AVAILABILITY_ZONES" >> ~/.bashrc
+echo "AWS_MASTER_STACK=$AWS_MASTER_STACK" >> ~/.bashrc
 echo "KOPS_STATE_STORE=$KOPS_STATE_STORE" >> ~/.bashrc
 
 # Persist EKS variables
